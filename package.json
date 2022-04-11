@@ -1,6 +1,6 @@
 {
   "name": "vue-use-webext-storage",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Reactive browser.storage for Vue",
   "main": "dist/vue-use-webext-storage.cjs.js",
   "module": "dist/vue-use-webext-storage.es.js",
