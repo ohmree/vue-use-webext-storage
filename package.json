@@ -1,0 +1,43 @@
+{
+  "name": "vue-use-webext-storage",
+  "version": "1.0.0",
+  "description": "TODO",
+  "main": "dist/vue-use-webext-storage.cjs.js",
+  "module": "dist/vue-use-webext-storage.es.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "author": "ohmree",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/webextension-polyfill": "^0.8.3",
+    "prettier": "^2.6.2",
+    "typescript": "^4.6.3",
+    "vite": "^2.9.1",
+    "vite-dts": "^1.0.4",
+    "vue": "^3.2.31",
+    "webextension-polyfill": "^0.9.0"
+  },
+  "dependencies": {
+    "@vueuse/shared": "^8.2.5",
+    "vue-demi": "*"
+  },
+  "peerDependencies": {
+    "@vue/composition-api": "^1.1.0",
+    "vue": "^2.6.0 || ^3.2.0",
+    "webextension-polyfill": "^0.9.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "@vue/composition-api": {
+      "optional": true
+    }
+  }
+}
