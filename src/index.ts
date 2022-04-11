@@ -48,7 +48,6 @@ export function useWebextStorage<T>(
   };
 
   const data = (shallow ? shallowRef : ref)(initialValue) as Ref<T>;
-  watchEffect(() => console.log(data.value));
 
   async function read(
     eventData: {
