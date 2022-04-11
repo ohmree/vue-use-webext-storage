@@ -6,7 +6,10 @@
       This is the options page
     </p>
 
-    <input v-model="storageDemo" class="border border-gray-400 rounded px-2 py-1 mt-2" />
+    <div class="mt-2">
+      <input v-model="inputValue" class="border border-gray-400 rounded px-2 py-1 mr-1" />
+      <button class="btn mt-2 ml-1" @click="storageDemo = inputValue">Save</button>
+    </div>
 
     <div class="mt-4">
       Powered by Vite <pixelarticons-zap class="align-middle" />
@@ -16,4 +19,5 @@
 
 <script setup lang="ts">
 import { storageDemo } from '~/logic/storage'
+const inputValue = ref(storageDemo.value);
 </script>
