@@ -1,7 +1,7 @@
 import type { MaybeRef, RemovableRef, EventFilter } from '@vueuse/shared';
 import { noop, tryOnScopeDispose, watchWithFilter } from '@vueuse/shared';
 import type { Ref } from 'vue';
-import { unref, ref, shallowRef, watchEffect } from 'vue-demi';
+import { unref, ref, shallowRef } from 'vue-demi';
 import * as browser from 'webextension-polyfill';
 import type { Storage } from 'webextension-polyfill';
 
@@ -15,12 +15,17 @@ export interface BrowserStorageOptions {
   eventFilter?: EventFilter;
 }
 
+export interface UseWebextStorageReturn<T> {
+  data: RemovableRef<T>;
+  error: Ref<unknown>;
+}
+
 export function useWebextStorage<T>(
   key: string,
   storageType: StorageType,
   initialValue: MaybeRef<T>,
   options: BrowserStorageOptions = {},
-): RemovableRef<T> {
+): UseWebextStorageReturn<T> {
   const {
     listenToStorageChanges = false,
     shallow = false,
@@ -48,6 +53,7 @@ export function useWebextStorage<T>(
   };
 
   const data = (shallow ? shallowRef : ref)(initialValue) as Ref<T>;
+  const error = ref<unknown>();
 
   async function read(
     eventData: {
@@ -63,15 +69,19 @@ export function useWebextStorage<T>(
       return;
     }
 
-    const rawValue = (await storage.getItem(key)) ?? changes?.[key].newValue;
-    // NOTE: we use `==` to check for undefined or null.
-    if (rawValue == null) {
-      data.value = rawInit;
-      if (writeDefaults && rawInit !== null) {
-        await storage.setItem(key, rawInit);
+    try {
+      const rawValue = (await storage.getItem(key)) ?? changes?.[key].newValue;
+      // NOTE: we use `==` to check for undefined or null.
+      if (rawValue == null) {
+        data.value = rawInit;
+        if (writeDefaults && rawInit !== null) {
+          await storage.setItem(key, rawInit);
+        }
+      } else {
+        data.value = rawValue;
       }
-    } else {
-      data.value = rawValue;
+    } catch (e) {
+      error.value = e;
     }
   }
 
@@ -92,10 +102,14 @@ export function useWebextStorage<T>(
       data,
       async () => {
         cleanup();
-        if (data.value == null) {
-          await storage.removeItem(key);
-        } else {
-          await storage.setItem(key, data.value);
+        try {
+          if (data.value == null) {
+            await storage.removeItem(key);
+          } else {
+            await storage.setItem(key, data.value);
+          }
+        } catch (e) {
+          error.value = e;
         }
 
         browser.storage.onChanged.addListener(handleChanges);
@@ -116,7 +130,7 @@ export function useWebextStorage<T>(
     tryOnScopeDispose(stop);
   }
 
-  return data as RemovableRef<T>;
+  return { data: data as RemovableRef<T>, error };
 }
 
 export function useBrowserLocalStorage<T>(
