@@ -10,7 +10,7 @@ export default defineConfig({
       fileName: format => `vue-use-webext-storage.${format}.js`,
     },
     rollupOptions: {
-      external: ['vue', 'vue-demi'],
+      external: ['vue', 'vue-demi', 'webextension-polyfill'],
       output: {
         sourcemapExcludeSources: true,
       },
