@@ -1,12 +1,15 @@
 {
   "name": "vue-use-webext-storage",
   "version": "1.0.0",
-  "description": "TODO",
+  "description": "Reactive browser.storage for Vue",
   "main": "dist/vue-use-webext-storage.cjs.js",
   "module": "dist/vue-use-webext-storage.es.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build"
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "lint": "prettier --check . && eslint --cache 'src/**/*.{json,ts,js,vue}'",
+    "fix": "eslint --cache 'src/**/*.{json,ts,js,vue}' --fix",
+    "format": "prettier --write ."
   },
   "files": [
     "dist",
@@ -15,7 +18,10 @@
   "author": "ohmree",
   "license": "MIT",
   "devDependencies": {
+    "@antfu/eslint-config": "^0.20.2",
     "@types/webextension-polyfill": "^0.8.3",
+    "eslint": "^8.13.0",
+    "eslint-config-prettier": "^8.5.0",
     "prettier": "^2.6.2",
     "typescript": "^4.6.3",
     "vite": "^2.9.1",

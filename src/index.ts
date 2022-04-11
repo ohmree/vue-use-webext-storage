@@ -1,7 +1,12 @@
-import type { MaybeRef, RemovableRef, EventFilter } from '@vueuse/shared';
-import { noop, tryOnScopeDispose, watchWithFilter } from '@vueuse/shared';
+import type { EventFilter, MaybeRef, RemovableRef } from '@vueuse/shared';
+import {
+  noop,
+  tryOnScopeDispose,
+  until,
+  watchWithFilter,
+} from '@vueuse/shared';
 import type { Ref } from 'vue';
-import { unref, ref, shallowRef } from 'vue-demi';
+import { ref, shallowRef, unref } from 'vue-demi';
 import * as browser from 'webextension-polyfill';
 import type { Storage } from 'webextension-polyfill';
 
@@ -18,6 +23,7 @@ export interface BrowserStorageOptions {
 export interface UseWebextStorageReturn<T> {
   data: RemovableRef<T>;
   error: Ref<unknown>;
+  isReady: Ref<boolean>;
 }
 
 export function useWebextStorage<T>(
@@ -25,7 +31,7 @@ export function useWebextStorage<T>(
   storageType: StorageType,
   initialValue: MaybeRef<T>,
   options: BrowserStorageOptions = {},
-): UseWebextStorageReturn<T> {
+): UseWebextStorageReturn<T> & PromiseLike<UseWebextStorageReturn<T>> {
   const {
     listenToStorageChanges = false,
     shallow = false,
@@ -54,6 +60,7 @@ export function useWebextStorage<T>(
 
   const data = (shallow ? shallowRef : ref)(initialValue) as Ref<T>;
   const error = ref<unknown>();
+  const isReady = ref(false);
 
   async function read(
     eventData: {
@@ -82,6 +89,8 @@ export function useWebextStorage<T>(
       }
     } catch (e) {
       error.value = e;
+    } finally {
+      isReady.value = true;
     }
   }
 
@@ -110,6 +119,8 @@ export function useWebextStorage<T>(
           }
         } catch (e) {
           error.value = e;
+        } finally {
+          isReady.value = true;
         }
 
         browser.storage.onChanged.addListener(handleChanges);
@@ -130,7 +141,18 @@ export function useWebextStorage<T>(
     tryOnScopeDispose(stop);
   }
 
-  return { data: data as RemovableRef<T>, error };
+  const state = { data: data as RemovableRef<T>, error, isReady };
+  return {
+    ...state,
+    then(onFulfilled, onRejected) {
+      return new Promise<UseWebextStorageReturn<T>>((resolve, reject) => {
+        until(isReady)
+          .toBeTruthy()
+          .then(() => resolve(state))
+          .catch(() => reject(state));
+      }).then(onFulfilled, onRejected);
+    },
+  };
 }
 
 export function useBrowserLocalStorage<T>(
