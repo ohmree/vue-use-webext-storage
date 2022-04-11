@@ -1,6 +1,7 @@
 import type { EventFilter, MaybeRef, RemovableRef } from '@vueuse/shared';
 import {
   noop,
+  refDebounced,
   tryOnScopeDispose,
   until,
   watchWithFilter,
@@ -18,6 +19,7 @@ export interface BrowserStorageOptions {
   writeDefaults?: boolean;
   deep?: boolean;
   eventFilter?: EventFilter;
+  debounceMs?: number;
 }
 
 export interface UseWebextStorageReturn<T> {
@@ -38,6 +40,7 @@ export function useWebextStorage<T>(
     writeDefaults = true,
     eventFilter,
     deep,
+    debounceMs = 250,
   } = options;
 
   const rawInit = unref(initialValue);
@@ -60,7 +63,8 @@ export function useWebextStorage<T>(
 
   const data = (shallow ? shallowRef : ref)(initialValue) as Ref<T>;
   const error = ref<unknown>();
-  const isReady = ref(false);
+  const isReadyRaw = ref(false);
+  const isReady = refDebounced(isReadyRaw, debounceMs);
 
   async function read(
     eventData: {
@@ -90,7 +94,7 @@ export function useWebextStorage<T>(
     } catch (e) {
       error.value = e;
     } finally {
-      isReady.value = true;
+      isReadyRaw.value = true;
     }
   }
 
@@ -120,7 +124,7 @@ export function useWebextStorage<T>(
         } catch (e) {
           error.value = e;
         } finally {
-          isReady.value = true;
+          isReadyRaw.value = true;
         }
 
         browser.storage.onChanged.addListener(handleChanges);
@@ -146,7 +150,7 @@ export function useWebextStorage<T>(
     ...state,
     then(onFulfilled, onRejected) {
       return new Promise<UseWebextStorageReturn<T>>((resolve, reject) => {
-        until(isReady)
+        until(isReadyRaw)
           .toBeTruthy()
           .then(() => resolve(state))
           .catch(() => reject(state));
