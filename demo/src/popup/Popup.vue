@@ -8,7 +8,7 @@
       <span class="opacity-50">Storage:</span> {{ data }}
     </div>
     <div class="m-2" v-else>
-      <span class="opacity-50 text-red-500">Error:</span> {{ error }}
+      <span class="opacity-50 text-red-500">{{ error }}</span>
     </div>
   </main>
 </template>

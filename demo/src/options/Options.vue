@@ -5,16 +5,14 @@
     <p class="mt-2 opacity-50">This is the options page</p>
 
     <div class="mt-2">
-      <span v-if="error != null" class="text-red-500">
+      <div v-if="error != null" class="text-red-500">
         {{ error }}
-      </span>
+      </div>
       <input
         v-model="inputValue"
         class="border border-gray-400 rounded px-2 py-1 mr-1"
       />
-      <button class="btn mt-2 ml-1" @click="data = inputValue">
-        Save
-      </button>
+      <button class="btn mt-2 ml-1" @click="data = inputValue">Save</button>
     </div>
 
     <div class="mt-4">
